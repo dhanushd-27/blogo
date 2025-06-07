@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/dhanushd-27/blog_go/db"
+	"github.com/dhanushd-27/blog_go/helper"
 	"github.com/joho/godotenv"
 )
 
@@ -17,7 +18,7 @@ func init() {
 }
 
 func main() {
-	db.NewDB(db.DBConfig{
+	database := db.NewDB(db.DBConfig{
 		Host:     os.Getenv("DB_HOST"),
 		Port:     os.Getenv("DB_PORT"),
 		User:     os.Getenv("DB_USER"),
@@ -25,4 +26,10 @@ func main() {
 		DBName:   os.Getenv("DB_NAME"),
 		SSLMode:  os.Getenv("DB_SSL_MODE"),
 	})
+
+	server := helper.NewApiServer(":8080", database)
+	err := server.Run()
+	if err != nil {
+		log.Fatalf("Error starting server: %v", err)
+	}
 }

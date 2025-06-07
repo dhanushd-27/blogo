@@ -3,25 +3,26 @@ package db
 import (
 	"fmt"
 	"log"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 type DB struct {
-	db *gorm.DB
+	db  *gorm.DB
 	err error
 }
 
 type DBConfig struct {
-	Host string
-	Port string
-	User string
+	Host     string
+	Port     string
+	User     string
 	Password string
-	DBName string
-	SSLMode string
+	DBName   string
+	SSLMode  string
 }
 
-func NewDB(config DBConfig) *DB {
+func NewDB(config DBConfig) *gorm.DB {
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", config.Host, config.Port, config.User, config.Password, config.DBName, config.SSLMode)
 
 	DB := &DB{}
@@ -34,5 +35,5 @@ func NewDB(config DBConfig) *DB {
 
 	fmt.Println("Connected to database")
 
-	return DB
+	return *&DB.db
 }
