@@ -1,4 +1,4 @@
-package helper
+package auth
 
 import (
 	"fmt"
@@ -7,10 +7,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var secretKey = os.Getenv("JWT_SECRET")
-
 func CreateToken(username string, email string) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodES256,
+	var secretKey = []byte(os.Getenv("JWT_SECRET"))
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"username": username,
 			"email":    email,
@@ -19,6 +19,7 @@ func CreateToken(username string, email string) (string, error) {
 
 	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
+		fmt.Println(err)
 		return "", err
 	}
 
@@ -26,6 +27,8 @@ func CreateToken(username string, email string) (string, error) {
 }
 
 func VerifyToken(tokenString string) error {
+	var secretKey = []byte(os.Getenv("JWT_SECRET"))
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
