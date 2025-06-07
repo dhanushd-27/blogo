@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/dhanushd-27/blog_go/routes"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 )
@@ -24,14 +25,9 @@ func (s *ApiServer) Run() error {
 	router := mux.NewRouter()
 	subrouter := router.PathPrefix("/api/v1").Subrouter()
 
-	subrouter.HandleFunc("/", getUsers).Methods("GET")
-
-	// subrouter.HandleFunc("/users", s.handleGetUsers).Methods("GET")
+	// Register user routes
+	routes.UserRoutes(subrouter, s.db)
 
 	fmt.Println("Server started on port 8080")
 	return http.ListenAndServe(s.addr, router)
-}
-
-func getUsers(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello world"))
 }
