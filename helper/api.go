@@ -3,7 +3,6 @@ package helper
 import (
 	"fmt"
 	"net/http"
-
 	"github.com/dhanushd-27/blog_go/routes"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
