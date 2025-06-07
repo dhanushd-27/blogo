@@ -27,6 +27,8 @@ func main() {
 		SSLMode:  os.Getenv("DB_SSL_MODE"),
 	})
 
+	helper.MigrateTables(database)
+
 	server := helper.NewApiServer(":8080", database)
 	err := server.Run()
 	if err != nil {
