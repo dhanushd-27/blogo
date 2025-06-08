@@ -3,6 +3,8 @@ package helper
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/dhanushd-27/blog_go/helper/cors"
 	"github.com/dhanushd-27/blog_go/routes"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
@@ -23,6 +25,9 @@ func NewApiServer(addr string, db *gorm.DB) *ApiServer {
 func (s *ApiServer) Run() error {
 	router := mux.NewRouter()
 	subrouter := router.PathPrefix("/api/v1").Subrouter()
+
+	// CORS middleware
+	router.Use(cors.SetCors)
 
 	// Register user routes
 	routes.UserRoutes(subrouter, s.db)
