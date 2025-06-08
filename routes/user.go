@@ -7,6 +7,6 @@ import (
 )
 
 func UserRoutes(router *mux.Router, db *gorm.DB) {
-	router.HandleFunc("/signup", controllers.UserSignup(db)).Methods("GET")
-	router.HandleFunc("/login", controllers.UserLogin(db)).Methods("GET")
+	router.HandleFunc("/signup", controllers.UserSignup(db)).Methods("POST")
+	router.HandleFunc("/login", controllers.UserLogin(db)).Methods("POST")
 }
