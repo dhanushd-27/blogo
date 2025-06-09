@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -79,10 +78,7 @@ func UserLogin(db *gorm.DB) http.HandlerFunc {
 			return
 		}
 
-		fmt.Println(existingUser)
-
 		err = bcrypt.CompareHashAndPassword([]byte(existingUser.Password), []byte(user.Password))
-
 
 		if err != nil {
 			http.Error(w, "Invalid email or password", http.StatusUnauthorized)
@@ -95,6 +91,18 @@ func UserLogin(db *gorm.DB) http.HandlerFunc {
 			w.Write([]byte("Error in creating token"))
 			return
 		}
+
+		cookie := http.Cookie{
+			Name:     "token",
+			Value:    token,
+			Path:     "/",
+			MaxAge:   3600,
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteLaxMode,
+		}
+
+		http.SetCookie(w, &cookie)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusAccepted)

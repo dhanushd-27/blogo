@@ -31,6 +31,7 @@ func (s *ApiServer) Run() error {
 
 	// Register user routes
 	routes.UserRoutes(subrouter, s.db)
+	routes.BlogRoutes(subrouter, s.db)
 
 	fmt.Println("Server started on port 8080")
 	return http.ListenAndServe(s.addr, router)
