@@ -16,6 +16,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
+
 		id, tokenErr := auth.VerifyToken(cookie.Value)
 
 		if tokenErr != nil {
@@ -29,3 +30,4 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
