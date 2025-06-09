@@ -5,14 +5,16 @@ import (
 	"os"
 	"time"
 
+
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func CreateToken(username string, email string) (string, error) {
+func CreateToken(username string, email string, userid uint) (string, error) {
 	var secretKey = []byte(os.Getenv("JWT_SECRET"))
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
+			"id":       userid,
 			"username": username,
 			"email":    email,
 			"exp":      time.Now().Add(time.Hour * 24).Unix(),
@@ -27,7 +29,7 @@ func CreateToken(username string, email string) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyToken(tokenString string) (string, error) {
+func VerifyToken(tokenString string) (uint, error) {
 	var secretKey = []byte(os.Getenv("JWT_SECRET"))
 
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
@@ -35,21 +37,23 @@ func VerifyToken(tokenString string) (string, error) {
 	})
 
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	if _, ok := token.Claims.(*jwt.MapClaims); ok && token.Valid {
 		claims := token.Claims.(*jwt.MapClaims)
 
-		email, ok := (*claims)["email"].(string)
+		id, ok := (*claims)["id"]
 
 		if ok {
-			fmt.Println("Email", email)
-			return email, nil
+			// Convert interface{} to float64 first (since JSON numbers are decoded as float64)
+			idFloat, ok := id.(float64)
+			if !ok {
+				return 0, fmt.Errorf("invalid id type in token")
+			}
+			// Convert float64 to uint
+			return uint(idFloat), nil
 		}
-	} else {
-		return "", fmt.Errorf("invalid token")
 	}
-
-	return token.Raw, nil
+	return 0, fmt.Errorf("invalid token")
 }
