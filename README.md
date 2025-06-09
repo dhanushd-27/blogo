@@ -63,3 +63,24 @@ go run main.go
 
 - **Blog**
   - Blog model has Id, Title, Content and UserId for reference
+
+#### Images of Testing the app using postman
+
+##### User Signup
+![User Signup](./assets/user-signup.png)
+
+##### User Login
+![User Login](./assets/user-login.png)
+
+##### User Login Set Cookie
+
+![User Login with cookie](./assets/user-login-cookie.png)
+
+##### Creating a Blog
+![Create Blog](./assets/blog-created.png)
+
+##### Fetch all blogs
+![Fetch All Blogs](./assets/fetch-all-blogs.png)
+
+##### Fetch a blog with Id
+![Fetch Blog by ID](./assets/fetch-blog-using-id.png)
