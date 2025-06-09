@@ -85,7 +85,7 @@ func UserLogin(db *gorm.DB) http.HandlerFunc {
 			return
 		}
 
-		token, err := auth.CreateToken(user.Username, user.Email)
+		token, err := auth.CreateToken(existingUser.Username, existingUser.Email, existingUser.ID)
 
 		if err != nil {
 			w.Write([]byte("Error in creating token"))
