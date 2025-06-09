@@ -2,6 +2,25 @@
 
 #### Blog app backend using Golang
 
+##### Summary
+
+This is a backend REST API project built with Golang to demonstrate core web development concepts and best practices. The application implements a blog platform with user authentication and blog post management.
+I built it for learning purpose.
+
+Key Features:
+- User Authentication (Signup/Login) with JWT tokens
+- Blog Post Management (Create, Read)
+- Protected routes with Auth Middleware
+- CORS support for cross-origin requests
+- PostgreSQL database with GORM ORM
+
+The project serves as a learning exercise for:
+- Building REST APIs with Golang
+- Implementing authentication and authorization
+- Working with databases using ORMs
+- Structuring a maintainable Go web application
+- Following Go best practices and conventions
+
 ##### 🚀 Tech Stack
 
 - **Language:** Go 1.24.2
