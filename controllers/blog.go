@@ -26,16 +26,16 @@ func CreateBlog(db *gorm.DB) http.HandlerFunc {
 			http.Error(w, "Error parsing request body", http.StatusBadRequest)
 			return
 		}
-		email, ok := context.Get(r, "email").(string)
+		id, ok := context.Get(r, "id").(uint)
 		if !ok {
 			http.Error(w, "Invalid email in context", http.StatusBadRequest)
 			return
 		}
 
-		blog.Email = email
+		blog.UserId = id
 
 		var user models.User
-		if err := db.Where("email = ?", blog.Email).First(&user).Error; err != nil {
+		if err := db.Where("id = ?",id).First(&user).Error; err != nil {
 			http.Error(w, "Error finding user", http.StatusInternalServerError)
 			return
 		}

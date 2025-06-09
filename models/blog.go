@@ -6,8 +6,8 @@ type Blog struct {
 	ID      uint   `gorm:"primaryKey"`
 	Title   string `gorm:"not null"`
 	Content string `gorm:"not null"`
-	User    User   `gorm:"foreignKey:Email"`
-	Email   string
+	User    User   `gorm:"foreignKey:UserId"`
+	UserId  uint
 }
 
 func MigrateBlogs(db *gorm.DB) error {

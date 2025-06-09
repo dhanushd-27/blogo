@@ -16,7 +16,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
-		email, tokenErr := auth.VerifyToken(cookie.Value)
+
+		id, tokenErr := auth.VerifyToken(cookie.Value)
 
 		if tokenErr != nil {
 			http.Error(w, "Invalid Token", http.StatusForbidden)
@@ -24,8 +25,9 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		context.Set(r, "email", email)
+		context.Set(r, "id", id)
 
 		next.ServeHTTP(w, r)
 	})
 }
+
