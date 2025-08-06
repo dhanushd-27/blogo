@@ -49,7 +49,10 @@ func CreateBlog(db *gorm.DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(blog)
+		if err := json.NewEncoder(w).Encode(blog); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+	}
 	}
 }
 
@@ -63,7 +66,10 @@ func ListBlog(db *gorm.DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(blogs)
+		if err := json.NewEncoder(w).Encode(blogs); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -88,6 +94,9 @@ func FindBlog(db *gorm.DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(blog)
+		if err := json.NewEncoder(w).Encode(blog); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }

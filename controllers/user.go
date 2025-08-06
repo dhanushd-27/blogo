@@ -50,9 +50,12 @@ func UserSignup(db *gorm.DB) http.HandlerFunc {
 		// Send success response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(map[string]string{
+		if err := json.NewEncoder(w).Encode(map[string]string{
 			"message": "User created successfully",
-		})
+		}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -88,7 +91,9 @@ func UserLogin(db *gorm.DB) http.HandlerFunc {
 		token, err := auth.CreateToken(existingUser.Username, existingUser.Email, existingUser.ID)
 
 		if err != nil {
-			w.Write([]byte("Error in creating token"))
+			if _, err := w.Write([]byte("Error in creating token")); err != nil {
+				http.Error(w, "Error in creating token", http.StatusInternalServerError)
+			}
 			return
 		}
 
@@ -106,8 +111,11 @@ func UserLogin(db *gorm.DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusAccepted)
-		json.NewEncoder(w).Encode(map[string]string{
+		if err := json.NewEncoder(w).Encode(map[string]string{
 			"token": token,
-		})
+		}); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
 	}
 }
