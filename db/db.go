@@ -35,5 +35,5 @@ func NewDB(config DBConfig) *gorm.DB {
 
 	fmt.Println("Connected to database")
 
-	return *&DB.db
+	return DB.db
 }
