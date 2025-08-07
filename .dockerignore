@@ -1,0 +1,19 @@
+# Go binaries and dependencies
+bin/
+*.exe
+*.out
+
+# Vendor and build artifacts
+vendor/
+*.log
+*.tmp
+
+# Git and local files
+.git
+.env
+*.DS_Store
+.idea/
+.vscode/
+
+# Docs/assets
+assets/
