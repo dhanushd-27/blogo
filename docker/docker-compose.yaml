@@ -4,6 +4,7 @@ services:
   db:
     container_name: blogo-db
     image: postgres:17-alpine
+    restart: always
     ports:
       - 5434:5432
     environment:
