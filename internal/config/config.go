@@ -13,11 +13,19 @@ const (
 )
 
 type Config struct {
-	Port       string
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
+	Port                  string
+	DBHost                string
+	DBPort                string
+	DBUser                string
+	DBPassword            string
+	DBName                string
+	SSLMode               string
+	DBMaxConn             string
+	DBMinConn             string
+	DBConnMaxLifetime     string
+	DBConnMaxIdleLifetime string
+	DBHealthCheckPeriod   string
+	ConnectTimeout        string
 }
 
 var (
@@ -38,11 +46,19 @@ func Load() (*Config, error) {
 		}
 
 		instance = &Config{
-			Port:       getEnv("PORT"),
-			DBHost:     getEnv("DB_HOST"),
-			DBPort:     getEnv("DB_PORT"),
-			DBUser:     getEnv("DB_USER"),
-			DBPassword: getEnv("DB_PASSWORD"),
+			Port:                  getEnv("PORT"),
+			DBHost:                getEnv("DB_HOST"),
+			DBPort:                getEnv("DB_PORT"),
+			DBUser:                getEnv("DB_USER"),
+			DBPassword:            getEnv("DB_PASSWORD"),
+			DBName:                getEnv("DB_NAME"),
+			SSLMode:               getEnv("SSL_MODE"),
+			DBMaxConn:             getEnv("DB_MAX_CONN"),
+			DBMinConn:             getEnv("DB_MIN_CONN"),
+			DBConnMaxLifetime:     getEnv("DB_CONN_MAX_LIFETIME"),
+			DBConnMaxIdleLifetime: getEnv("DB_CONN_MAX_IDLE_LIFETIME"),
+			DBHealthCheckPeriod:   getEnv("DB_HEALTH_CHECK_PERIOD"),
+			ConnectTimeout:        getEnv("CONNECT_TIMEOUT"),
 		}
 	})
 
