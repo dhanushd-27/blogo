@@ -1,7 +1,7 @@
-server-run: 
+server-up:
 	go run cmd/server/main.go
 
-server-close:
+server-down:
 	kill -9 $(pgrep -f "go run cmd/server/main.go")
 
 docker-up:
