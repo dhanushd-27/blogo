@@ -16,3 +16,9 @@ docker-restart:
 
 docker-logs:
 	docker compose -f docker/docker-compose.yaml logs -f
+
+migrate-up:
+	export POSTGRES_URL='postgres://postgres:postgres@localhost:5434/blogo?sslmode=disable' && migrate -database ${POSTGRES_URL} -path internal/db/migration up
+
+migrate-down:
+	export POSTGRES_URL='postgres://postgres:postgres@localhost:5434/blogo?sslmode=disable' && migrate -database ${POSTGRES_URL} -path internal/db/migration down
