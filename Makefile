@@ -22,3 +22,6 @@ migrate-up:
 
 migrate-down:
 	export POSTGRES_URL='postgres://postgres:postgres@localhost:5434/blogo?sslmode=disable' && migrate -database ${POSTGRES_URL} -path internal/db/migration down
+
+sqlc:
+	go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.27.0 generate

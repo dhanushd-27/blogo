@@ -1,0 +1,24 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+<!-- Try to first check if the code is self explainotory or not. If not let's try to rename things. If that doesn't and code is too long we would need to add only necessary comments above a line of code and no full description of code is required. Basically make sure the no of lines of comments is not greater than the number of code it self that makes it even harder for someone to understand code
+
+• Comments should solve the why question and not focus on what code is doing. It is often better for comments to explain why something is done, not what the code is doing.
+
+Has comments that explain why, not what, the code is doing to avoid future deviation
+Has documentation that stands on its own
+Has useful errors and useful test failures
+May often be mutually exclusive with “clever” code
+
+If writing complex code is inevitable we can add good documentation for it or sensible comments which solves the why problem, not what.
+  • Writing test case for this
+
+  If code turns out to be very complex when its purpose should be simple, this is often a signal to revisit the implementation to see if there is a simpler way to accomplish the same thing.
+
+  If two code which look similar but they are used for different use cases it is better to add comments to avoid the assuming factor!!!
+
+  don't try to write smart code, let the code be more descriptive and remember the code is edited more number of times it is written.
+ -->
