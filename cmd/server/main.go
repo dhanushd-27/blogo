@@ -3,8 +3,10 @@ package main
 import (
 	"blogo/internal/config"
 	"blogo/internal/db"
+	"blogo/internal/handlers"
+	"blogo/internal/routes"
+
 	"log"
-	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
@@ -23,9 +25,12 @@ func main() {
 	defer db.Close()
 
 	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
+
+	// Register routes here
+	routes.HealthCheck(e)
+	routes.BlogRoutes(e, handlers.NewBlogHandler())
+	routes.UserRoutes(e, handlers.NewUserHandler())
+
 	e.Logger.Fatal(e.Start(":" + cfg.Port))
 
 	log.Printf("Server is running on port %s", cfg.Port)
