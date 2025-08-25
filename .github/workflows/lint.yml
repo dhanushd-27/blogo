@@ -1,12 +1,10 @@
 name: lint and typecheck
 on:
-  push:
+  pull_request:
     branches:
       - main
       - feat/*
       - fix/*
-
-  pull_request:
 
 jobs:
   lint:
