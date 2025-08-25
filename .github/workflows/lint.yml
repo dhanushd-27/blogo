@@ -2,10 +2,9 @@ name: lint and typecheck
 on:
   pull_request:
     branches:
-      - main
-      - feat/*
-      - fix/*
-
+      - staging
+      - production
+      
 jobs:
   lint:
     name: lint
