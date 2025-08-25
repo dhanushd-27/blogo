@@ -5,6 +5,7 @@ import (
 	"blogo/internal/db"
 	"blogo/internal/db/sqlc"
 	"blogo/internal/handlers"
+	"blogo/internal/middleware"
 	"blogo/internal/routes"
 
 	"log"
@@ -30,6 +31,8 @@ func main() {
 
 	e := echo.New()
 
+	e.Use(middleware.Logger)
+	
 	// Register routes here
 	routes.HealthCheck(e)
 	routes.BlogRoutes(e, handlers.NewBlogHandler(queries))

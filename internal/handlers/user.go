@@ -17,6 +17,7 @@ type UserHandler interface {
 	DeleteUser(c echo.Context) error
 	GetUser(c echo.Context) error
 	GetAllUsers(c echo.Context) error
+	Login(c echo.Context) error
 }
 
 func NewUserHandler(db *sqlc.Queries) UserHandler {
@@ -43,4 +44,8 @@ func (h *userHandler) GetUser(c echo.Context) error {
 
 func (h *userHandler) GetAllUsers(c echo.Context) error {
 	return response.Success(c, "All users fetched successfully", nil)
+}
+
+func (h *userHandler) Login(c echo.Context) error {
+	return response.Success(c, "User logged in successfully", nil)
 }
