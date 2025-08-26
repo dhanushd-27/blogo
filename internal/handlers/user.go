@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"blogo/internal/db/sqlc"
+	"blogo/internal/services/model"
 	"blogo/internal/services/response"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
@@ -27,6 +29,13 @@ func NewUserHandler(db *sqlc.Queries) UserHandler {
 }
 
 func (h *userHandler) CreateUser(c echo.Context) error {
+	u := model.SignUp{}
+	if err := c.Bind(&u); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
+	if err := c.Validate(u); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
 	return response.Success(c, "User created successfully", nil)
 }
 
