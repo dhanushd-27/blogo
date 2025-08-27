@@ -26,6 +26,7 @@ type Config struct {
 	DBConnMaxIdleLifetime string
 	DBHealthCheckPeriod   string
 	ConnectTimeout        string
+	JWTSecret             string
 }
 
 var (
@@ -59,6 +60,7 @@ func Load() (*Config, error) {
 			DBConnMaxIdleLifetime: getEnv("DB_CONN_MAX_IDLE_LIFETIME"),
 			DBHealthCheckPeriod:   getEnv("DB_HEALTH_CHECK_PERIOD"),
 			ConnectTimeout:        getEnv("CONNECT_TIMEOUT"),
+			JWTSecret:             getEnv("JWT_SECRET"),
 		}
 	})
 

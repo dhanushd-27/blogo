@@ -39,7 +39,7 @@ func main() {
 	// Register routes here
 	routes.HealthCheck(e)
 	routes.BlogRoutes(e, handlers.NewBlogHandler(queries))
-	routes.UserRoutes(e, handlers.NewUserHandler(queries))
+	routes.UserRoutes(e, handlers.NewUserHandler(queries, cfg))
 
 	e.Logger.Fatal(e.Start(":" + cfg.Port))
 
