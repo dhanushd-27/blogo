@@ -22,7 +22,7 @@ func Success(c echo.Context, message string, data interface{}) error {
 
 func Created(c echo.Context, message string, data interface{}) error {
 	return c.JSON(http.StatusCreated, Response{
-		Status: "created",
+		Status:  "created",
 		Message: message,
 		Data:    data,
 	})
