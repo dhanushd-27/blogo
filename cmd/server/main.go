@@ -38,8 +38,8 @@ func main() {
 
 	// Register routes here
 	routes.HealthCheck(e)
-	routes.BlogRoutes(e, handlers.NewBlogHandler(queries))
-	routes.UserRoutes(e, handlers.NewUserHandler(queries, cfg))
+	routes.BlogRoutes(e, handlers.NewBlogHandler(queries), cfg)
+	routes.UserRoutes(e, handlers.NewUserHandler(queries, cfg), cfg)
 
 	e.Logger.Fatal(e.Start(":" + cfg.Port))
 

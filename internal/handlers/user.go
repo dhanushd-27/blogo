@@ -96,7 +96,7 @@ func (h *userHandler) Login(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
-	// Set HTTP-only cookie for secure token storage
+	// setting up a http only cookie
 	cookie := new(http.Cookie)
 	cookie.Name = "token"
 	cookie.Value = tokenString
