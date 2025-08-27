@@ -12,6 +12,7 @@ import (
 	"log"
 
 	"github.com/labstack/echo/v4"
+	em "github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -33,6 +34,11 @@ func main() {
 	e := echo.New()
 
 	e.Use(middleware.Logger)
+	e.Use(em.CORSWithConfig(em.CORSConfig{
+		AllowOrigins: []string{"http://localhost:3000"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowCredentials: true,
+	}))
 
 	e.Validator = model.NewValidator()
 
