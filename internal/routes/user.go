@@ -2,7 +2,7 @@ package routes
 
 import (
 	"blogo/internal/config"
-	"blogo/internal/handlers"
+	"blogo/internal/handlers/user"
 	"blogo/internal/middleware"
 
 	"github.com/labstack/echo/v4"

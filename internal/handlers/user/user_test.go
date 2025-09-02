@@ -19,7 +19,6 @@ func TestCreateUser(t *testing.T) {
 	// Create a new Echo instance
 	e := echo.New()
 
-	
 	// Register the validator (this is what was missing!)
 	e.Validator = model.NewValidator()
 
