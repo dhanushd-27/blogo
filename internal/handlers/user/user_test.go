@@ -323,3 +323,26 @@ func TestLogin(t *testing.T) {
 		}
 	})
 }
+
+func TestGetUser(t *testing.T) {
+	e := echo.New()
+
+	e.Validator = model.NewValidator()
+
+	// cfg := &config.Config{
+	// 	JWTSecret: "test-secret-key",
+	// }
+
+	t.Run("Valid Get User", func(t *testing.T) {
+		// Create User here
+		// Get the user with new id's created
+	})
+
+	t.Run("User Not Found", func(t *testing.T) {
+		// Get the user with a random eid
+	})
+
+	t.Run("Invalid JSON", func(t *testing.T) {
+		// Don't include the ID field
+	})
+}

@@ -39,4 +39,3 @@ RETURNING id, name, email, password, created_at, updated_at;
 DELETE FROM users
 WHERE id = $1;
 
-

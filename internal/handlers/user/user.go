@@ -49,6 +49,11 @@ func (h *userHandler) CreateUser(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
+	_, err = h.db.GetUserByEmail(context.Background(), u.Email)
+	if err == nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "User already exists"})
+	}
+
 	user, err := h.db.CreateUser(context.Background(), sqlc.CreateUserParams{
 		Name:     u.Name,
 		Email:    u.Email,
@@ -112,6 +117,30 @@ func (h *userHandler) Login(c echo.Context) error {
 }
 
 func (h *userHandler) UpdateUser(c echo.Context) error {
+	u := model.UpdateUser{}
+
+	if err := c.Bind(&u); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid body type"})
+	}
+
+	if err := c.Validate(u); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid body fields"})
+	}
+
+	_, err := h.db.GetUserByID(context.Background(), u.ID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	_, err = h.db.UpdateUser(context.Background(), sqlc.UpdateUserParams{
+		Name:     *u.Name,
+		Email:    *u.Email,
+		Password: *u.Password,
+	})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "User Update Failed"})
+	}
+
 	return response.Success(c, "User updated successfully", nil)
 }
 
@@ -120,7 +149,22 @@ func (h *userHandler) DeleteUser(c echo.Context) error {
 }
 
 func (h *userHandler) GetUser(c echo.Context) error {
-	return response.Success(c, "User fetched successfully", nil)
+	u := model.GetUser{}
+
+	if err := c.Bind(&u); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid body type"})
+	}
+
+	if err := c.Validate(u); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid body fields"})
+	}
+
+	user, err := h.db.GetUserByID(context.Background(), u.ID)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "User Not Found"})
+	}
+
+	return response.Success(c, "User fetched successfully", user)
 }
 
 func (h *userHandler) GetAllUsers(c echo.Context) error {
