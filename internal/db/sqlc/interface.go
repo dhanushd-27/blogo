@@ -1,8 +1,8 @@
 package sqlc
 
-import "context"
-
 //go:generate mockery --name=Querier --output=../mocks --outpkg=mocks
+
+import "context"
 
 // Querier defines all methods that our database queries implement
 type Querier interface {
