@@ -15,7 +15,7 @@ import (
 )
 
 type userHandler struct {
-	db  *sqlc.Queries
+	db  sqlc.Querier
 	cfg *config.Config
 }
 
@@ -28,7 +28,7 @@ type UserHandler interface {
 	Login(c echo.Context) error
 }
 
-func NewUserHandler(db *sqlc.Queries, cfg *config.Config) UserHandler {
+func NewUserHandler(db sqlc.Querier, cfg *config.Config) UserHandler {
 	return &userHandler{
 		db:  db,
 		cfg: cfg,
