@@ -335,14 +335,18 @@ func TestGetUser(t *testing.T) {
 
 	t.Run("Valid Get User", func(t *testing.T) {
 		// Create User here
+		// Login get the cookie
 		// Get the user with new id's created
 	})
 
 	t.Run("User Not Found", func(t *testing.T) {
-		// Get the user with a random eid
+		// Login get the cookie
+		// Get the user with a wrong id
 	})
 
 	t.Run("Invalid JSON", func(t *testing.T) {
+		// Create User
+		// Login get the cookie
 		// Don't include the ID field
 	})
 }
