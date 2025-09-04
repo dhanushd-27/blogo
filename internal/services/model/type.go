@@ -19,7 +19,3 @@ type UpdateUser struct {
 	Email    *string `json:"email" validate:"omitempty,email,min=6,max=32"`
 	Password *string `json:"password" validate:"omitempty,min=8,max=32"`
 }
-
-type GetUser struct {
-	ID int32 `json:"id" validate:"required"`
-}

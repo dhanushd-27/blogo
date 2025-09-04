@@ -12,7 +12,7 @@ func UserRoutes(e *echo.Echo, h handlers.UserHandler, cfg *config.Config) {
 	e.POST("/signup", h.CreateUser)
 	e.POST("/login", h.Login)
 
-	e.GET("/me", h.GetUser, middleware.JWTCookieMiddleware(cfg.JWTSecret))
+	e.GET("/me", h.Me, middleware.JWTCookieMiddleware(cfg.JWTSecret))
 
 	userGroup := e.Group("/user")
 	userGroup.Use(middleware.JWTCookieMiddleware(cfg.JWTSecret))

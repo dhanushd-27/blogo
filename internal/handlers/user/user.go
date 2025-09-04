@@ -7,6 +7,7 @@ import (
 	"blogo/internal/services/response"
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -23,7 +24,7 @@ type UserHandler interface {
 	CreateUser(c echo.Context) error
 	UpdateUser(c echo.Context) error
 	DeleteUser(c echo.Context) error
-	GetUser(c echo.Context) error
+	Me(c echo.Context) error
 	GetAllUsers(c echo.Context) error
 	Login(c echo.Context) error
 }
@@ -148,23 +149,19 @@ func (h *userHandler) DeleteUser(c echo.Context) error {
 	return response.Success(c, "User deleted successfully", nil)
 }
 
-func (h *userHandler) GetUser(c echo.Context) error {
-	u := model.GetUser{}
+func (h *userHandler) Me(c echo.Context) error {
+	userID := c.Get("user_id").(float64)
 
-	if err := c.Bind(&u); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid body type"})
-	}
-
-	if err := c.Validate(u); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid body fields"})
-	}
-
-	user, err := h.db.GetUserByID(context.Background(), u.ID)
+	user, err := h.db.GetUserByID(context.Background(), int32(userID))
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "User Not Found"})
 	}
 
-	return response.Success(c, "User fetched successfully", user)
+	return response.Success(c, "User fetched successfully", map[string]string{
+		"id":    strconv.Itoa(int(user.ID)),
+		"name":  user.Name,
+		"email": user.Email,
+	})
 }
 
 func (h *userHandler) GetAllUsers(c echo.Context) error {
