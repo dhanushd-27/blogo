@@ -6,7 +6,6 @@ import (
 	"blogo/internal/db/sqlc"
 	blog "blogo/internal/handlers/blog"
 	user "blogo/internal/handlers/user"
-	"blogo/internal/middleware"
 	"blogo/internal/routes"
 	"blogo/internal/services/model"
 
@@ -34,7 +33,9 @@ func main() {
 
 	e := echo.New()
 
-	e.Use(middleware.Logger)
+	e.Use(em.LoggerWithConfig(em.LoggerConfig{
+		Format: "--> ${method} ${path} ${status} ${latency_human} \n",
+	}))
 	e.Use(em.CORSWithConfig(em.CORSConfig{
 		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
