@@ -4,8 +4,8 @@ import (
 	"blogo/internal/config"
 	"blogo/internal/db"
 	"blogo/internal/db/sqlc"
-	"blogo/internal/handlers"
-	"blogo/internal/middleware"
+	blog "blogo/internal/handlers/blog"
+	user "blogo/internal/handlers/user"
 	"blogo/internal/routes"
 	"blogo/internal/services/model"
 
@@ -33,10 +33,12 @@ func main() {
 
 	e := echo.New()
 
-	e.Use(middleware.Logger)
+	e.Use(em.LoggerWithConfig(em.LoggerConfig{
+		Format: "--> ${method} ${path} ${status} ${latency_human} \n",
+	}))
 	e.Use(em.CORSWithConfig(em.CORSConfig{
-		AllowOrigins: []string{"http://localhost:3000"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 		AllowCredentials: true,
 	}))
 
@@ -44,8 +46,8 @@ func main() {
 
 	// Register routes here
 	routes.HealthCheck(e)
-	routes.BlogRoutes(e, handlers.NewBlogHandler(queries), cfg)
-	routes.UserRoutes(e, handlers.NewUserHandler(queries, cfg), cfg)
+	routes.BlogRoutes(e, blog.NewBlogHandler(queries), cfg)
+	routes.UserRoutes(e, user.NewUserHandler(queries, cfg), cfg)
 
 	e.Logger.Fatal(e.Start(":" + cfg.Port))
 
