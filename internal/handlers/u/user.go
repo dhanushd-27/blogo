@@ -1,4 +1,4 @@
-package handlers
+package u
 
 import (
 	"blogo/internal/config"
@@ -15,12 +15,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type userHandler struct {
-	queries  sqlc.Querier
-	cfg *config.Config
+type UserHandler struct {
+	queries sqlc.Querier
+	cfg     *config.Config
 }
 
-type UserHandler interface {
+type UserHandlerInterface interface {
 	CreateUser(c echo.Context) error
 	UpdateUser(c echo.Context) error
 	DeleteUser(c echo.Context) error
@@ -29,14 +29,14 @@ type UserHandler interface {
 	Login(c echo.Context) error
 }
 
-func NewUserHandler(queries sqlc.Querier, cfg *config.Config) UserHandler {
-	return &userHandler{
-		queries:  queries,
-		cfg: cfg,
+func NewUserHandler(queries sqlc.Querier, cfg *config.Config) UserHandlerInterface {
+	return &UserHandler{
+		queries: queries,
+		cfg:     cfg,
 	}
 }
 
-func (h *userHandler) CreateUser(c echo.Context) error {
+func (h *UserHandler) CreateUser(c echo.Context) error {
 	u := model.SignUp{}
 	if err := c.Bind(&u); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
@@ -52,7 +52,7 @@ func (h *userHandler) CreateUser(c echo.Context) error {
 
 	_, err = h.queries.GetUserByEmail(context.Background(), u.Email)
 	if err == nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "User already exists"})
+		return c.JSON(http.StatusConflict, map[string]string{"error": "User already exists"})
 	}
 
 	user, err := h.queries.CreateUser(context.Background(), sqlc.CreateUserParams{
@@ -67,7 +67,7 @@ func (h *userHandler) CreateUser(c echo.Context) error {
 	return response.Success(c, "User created successfully", user)
 }
 
-func (h *userHandler) Login(c echo.Context) error {
+func (h *UserHandler) Login(c echo.Context) error {
 	u := model.Login{}
 
 	if err := c.Bind(&u); err != nil {
@@ -117,7 +117,7 @@ func (h *userHandler) Login(c echo.Context) error {
 	return response.Success(c, "User logged in successfully", nil)
 }
 
-func (h *userHandler) UpdateUser(c echo.Context) error {
+func (h *UserHandler) UpdateUser(c echo.Context) error {
 	u := model.UpdateUser{}
 
 	if err := c.Bind(&u); err != nil {
@@ -145,11 +145,11 @@ func (h *userHandler) UpdateUser(c echo.Context) error {
 	return response.Success(c, "User updated successfully", nil)
 }
 
-func (h *userHandler) DeleteUser(c echo.Context) error {
+func (h *UserHandler) DeleteUser(c echo.Context) error {
 	return response.Success(c, "User deleted successfully", nil)
 }
 
-func (h *userHandler) Me(c echo.Context) error {
+func (h *UserHandler) Me(c echo.Context) error {
 	userID := c.Get("user_id").(float64)
 
 	user, err := h.queries.GetUserByID(context.Background(), int32(userID))
@@ -164,6 +164,6 @@ func (h *userHandler) Me(c echo.Context) error {
 	})
 }
 
-func (h *userHandler) GetAllUsers(c echo.Context) error {
+func (h *UserHandler) GetAllUsers(c echo.Context) error {
 	return response.Success(c, "All users fetched successfully", nil)
 }

@@ -1,4 +1,4 @@
-package handlers
+package blog
 
 import (
 	"blogo/internal/db/sqlc"

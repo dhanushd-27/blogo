@@ -6,7 +6,7 @@ import (
 	"blogo/internal/db"
 	"blogo/internal/db/sqlc"
 	blog "blogo/internal/handlers/blog"
-	user "blogo/internal/handlers/user"
+	user "blogo/internal/handlers/u"
 	"blogo/internal/routes"
 	"blogo/internal/services/model"
 
