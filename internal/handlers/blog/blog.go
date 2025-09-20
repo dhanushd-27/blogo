@@ -8,7 +8,7 @@ import (
 )
 
 type blogHandler struct {
-	db *sqlc.Queries
+	queries sqlc.Querier
 }
 
 type BlogHandler interface {
@@ -19,9 +19,9 @@ type BlogHandler interface {
 	GetAllBlogs(c echo.Context) error
 }
 
-func NewBlogHandler(db *sqlc.Queries) BlogHandler {
+func NewBlogHandler(queries sqlc.Querier) BlogHandler {
 	return &blogHandler{
-		db: db,
+		queries: queries,
 	}
 }
 

@@ -16,7 +16,7 @@ import (
 )
 
 type userHandler struct {
-	db  sqlc.Querier
+	queries  sqlc.Querier
 	cfg *config.Config
 }
 
@@ -29,9 +29,9 @@ type UserHandler interface {
 	Login(c echo.Context) error
 }
 
-func NewUserHandler(db sqlc.Querier, cfg *config.Config) UserHandler {
+func NewUserHandler(queries sqlc.Querier, cfg *config.Config) UserHandler {
 	return &userHandler{
-		db:  db,
+		queries:  queries,
 		cfg: cfg,
 	}
 }
@@ -50,12 +50,12 @@ func (h *userHandler) CreateUser(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
-	_, err = h.db.GetUserByEmail(context.Background(), u.Email)
+	_, err = h.queries.GetUserByEmail(context.Background(), u.Email)
 	if err == nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "User already exists"})
 	}
 
-	user, err := h.db.CreateUser(context.Background(), sqlc.CreateUserParams{
+	user, err := h.queries.CreateUser(context.Background(), sqlc.CreateUserParams{
 		Name:     u.Name,
 		Email:    u.Email,
 		Password: string(hashedPassword),
@@ -78,7 +78,7 @@ func (h *userHandler) Login(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
 
-	user, err := h.db.GetUserByEmail(context.Background(), u.Email)
+	user, err := h.queries.GetUserByEmail(context.Background(), u.Email)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
@@ -128,12 +128,12 @@ func (h *userHandler) UpdateUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid body fields"})
 	}
 
-	_, err := h.db.GetUserByID(context.Background(), u.ID)
+	_, err := h.queries.GetUserByID(context.Background(), u.ID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
-	_, err = h.db.UpdateUser(context.Background(), sqlc.UpdateUserParams{
+	_, err = h.queries.UpdateUser(context.Background(), sqlc.UpdateUserParams{
 		Name:     *u.Name,
 		Email:    *u.Email,
 		Password: *u.Password,
@@ -152,7 +152,7 @@ func (h *userHandler) DeleteUser(c echo.Context) error {
 func (h *userHandler) Me(c echo.Context) error {
 	userID := c.Get("user_id").(float64)
 
-	user, err := h.db.GetUserByID(context.Background(), int32(userID))
+	user, err := h.queries.GetUserByID(context.Background(), int32(userID))
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "User Not Found"})
 	}
