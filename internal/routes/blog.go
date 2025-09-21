@@ -2,13 +2,13 @@ package routes
 
 import (
 	"blogo/internal/config"
-	"blogo/internal/handlers/blog"
+	blog "blogo/internal/handlers/blog"
 	"blogo/internal/middleware"
 
 	"github.com/labstack/echo/v4"
 )
 
-func BlogRoutes(e *echo.Echo, h handlers.BlogHandler, cfg *config.Config) {
+func BlogRoutes(e *echo.Echo, h blog.BlogHandler, cfg *config.Config) {
 	// Public route for getting all blogs (no auth required)
 	e.GET("/blogs", h.GetAllBlogs)
 	e.GET("/blogs/:id", h.GetBlog)

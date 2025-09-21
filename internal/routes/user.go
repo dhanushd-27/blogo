@@ -2,13 +2,13 @@ package routes
 
 import (
 	"blogo/internal/config"
-	handlers "blogo/internal/handlers/user"
+	"blogo/internal/handlers/u"
 	"blogo/internal/middleware"
 
 	"github.com/labstack/echo/v4"
 )
 
-func UserRoutes(e *echo.Echo, h handlers.UserHandler, cfg *config.Config) {
+func UserRoutes(e *echo.Echo, h u.UserHandlerInterface, cfg *config.Config) {
 	e.POST("/signup", h.CreateUser)
 	e.POST("/login", h.Login)
 

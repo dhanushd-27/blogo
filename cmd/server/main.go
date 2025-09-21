@@ -2,10 +2,11 @@ package main
 
 import (
 	"blogo/internal/config"
+	"blogo/internal/container"
 	"blogo/internal/db"
 	"blogo/internal/db/sqlc"
 	blog "blogo/internal/handlers/blog"
-	user "blogo/internal/handlers/user"
+	user "blogo/internal/handlers/u"
 	"blogo/internal/routes"
 	"blogo/internal/services/model"
 
@@ -42,12 +43,18 @@ func main() {
 		AllowCredentials: true,
 	}))
 
+	c := container.NewContainer(dbPool, cfg, queries)
+
 	e.Validator = model.NewValidator()
+
+	// Create handlers
+	blogHandler := blog.NewBlogHandler(c.GetQueries())
+	userHandler := user.NewUserHandler(c.GetQueries(), c.GetConfig())
 
 	// Register routes here
 	routes.HealthCheck(e)
-	routes.BlogRoutes(e, blog.NewBlogHandler(queries), cfg)
-	routes.UserRoutes(e, user.NewUserHandler(queries, cfg), cfg)
+	routes.BlogRoutes(e, blogHandler, c.GetConfig())
+	routes.UserRoutes(e, userHandler, c.GetConfig())
 
 	e.Logger.Fatal(e.Start(":" + cfg.Port))
 
