@@ -15,8 +15,8 @@ type Container struct {
 
 func NewContainer(db *pgxpool.Pool, config *config.Config, queries sqlc.Querier) *Container {
 	return &Container{
-		db:     db,
-		config: config,
+		db:      db,
+		config:  config,
 		queries: queries,
 	}
 }

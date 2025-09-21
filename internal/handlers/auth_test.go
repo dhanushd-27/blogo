@@ -61,7 +61,8 @@ func TestCreateUser(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		// Call the CreateUser method
-		userHandler.CreateUser(c)
+		err := userHandler.CreateUser(c)
+		assert.NoError(t, err)
 
 		// Assertions
 		var response map[string]interface{}
