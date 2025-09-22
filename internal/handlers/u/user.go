@@ -128,15 +128,20 @@ func (h *UserHandler) UpdateUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Validation failed: " + err.Error()})
 	}
 
-	_, err := h.queries.GetUserByID(context.Background(), u.ID)
+	// Only allow updating username; determine user ID from JWT context, not from request body
+	authedUserID := int32(c.Get("user_id").(float64))
+
+	// Fetch current user to preserve existing email and password
+	currentUser, err := h.queries.GetUserByID(context.Background(), authedUserID)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
 	}
 
 	_, err = h.queries.UpdateUser(context.Background(), sqlc.UpdateUserParams{
+		ID:       authedUserID,
 		Name:     *u.Name,
-		Email:    *u.Email,
-		Password: *u.Password,
+		Email:    currentUser.Email,
+		Password: currentUser.Password,
 	})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update user"})
