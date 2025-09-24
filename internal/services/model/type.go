@@ -16,3 +16,13 @@ type Login struct {
 type UpdateUser struct {
 	Name *string `json:"name" validate:"required,min=2,max=32"`
 }
+
+type CreateBlog struct {
+	Title   string `json:"title" validate:"required,min=8,max=150"`
+	Content string `json:"content" validate:"required,min=10"`
+}
+
+type UpdateBlog struct {
+	Title   *string `json:"title" validate:"omitempty,min=8,max=150"`
+	Content *string `json:"content" validate:"omitempty,min=10"`
+}
