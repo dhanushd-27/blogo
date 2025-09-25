@@ -24,4 +24,4 @@ migrate-down:
 	export POSTGRES_URL='postgres://postgres:postgres@localhost:5434/blogo?sslmode=disable' && migrate -database ${POSTGRES_URL} -path internal/db/migration down
 	
 test:
-	go test -v ./...
+	go test -v ./internal/handlers
