@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -12,18 +13,18 @@ func JWTCookieMiddleware(jwtSecret string) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			cookie, err := c.Cookie("token")
 			if err != nil || cookie.Value == "" {
-				return echo.NewHTTPError(http.StatusUnauthorized, "Missing JWT token")
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing or invalid token"})
 			}
 
 			token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-					return nil, echo.NewHTTPError(http.StatusUnauthorized, "Invalid token signing method")
+					return nil, fmt.Errorf("unexpected signing method")
 				}
 				return []byte(jwtSecret), nil
 			})
 
 			if err != nil || !token.Valid {
-				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid JWT token")
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid or expired token"})
 			}
 
 			claims := token.Claims.(jwt.MapClaims)
