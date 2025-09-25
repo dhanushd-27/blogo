@@ -1,105 +1,173 @@
-# Team Shiksha - Golang Proof of Work
+## Blogo - Blog API in Go (Echo, sqlc, pgx)
 
-#### Blog app backend using Golang
+This is a backend REST API for a simple blog platform, built with Go and the Echo framework. It demonstrates clean application structure, dependency injection, cookie-based JWT authentication, and a robust database layer using pgx + sqlc with migrations.
 
-##### Summary
+### Key Features
+- User authentication (signup/login) with JWT stored in HttpOnly cookies
+- Blog CRUD (public read; authenticated create/update/delete)
+- Auth middleware that reads and verifies JWT from cookies
+- CORS configured for a frontend at `http://localhost:3000`
+- PostgreSQL with `pgx` pool, `sqlc` generated queries, `golang-migrate` for migrations
+- Dependency Injection via a simple container for config, db, and queries
+- Tests using `testify`; mock DB via `mockery`
 
-This is a backend REST API project built with Golang to demonstrate core web development concepts and best practices. The application implements a blog platform with user authentication and blog post management.
-I built it for learning purpose.
+### 🚀 Tech Stack
+- Language: Go (1.22+ recommended)
+- Web framework: Echo (`github.com/labstack/echo/v4`)
+- Database driver/pool: `pgx` (`github.com/jackc/pgx/v5/pgxpool`)
+- Query generation: `sqlc`
+- Migrations: `golang-migrate` CLI
+- Auth: `github.com/golang-jwt/jwt/v5` (JWT in HttpOnly, Secure cookies)
+- Validation: Echo validator in `internal/services/model`
+- Testing: `testify` + `mockery` for mocks
 
-Key Features:
-- User Authentication (Signup/Login) with JWT tokens
-- Blog Post Management (Create, Read)
-- Protected routes with Auth Middleware
-- CORS support for cross-origin requests
-- PostgreSQL database with GORM ORM
+### Project Structure
+- `cmd/server/main.go`: app entrypoint, DI container wiring, Echo setup and route registration
+- `internal/config`: environment-driven configuration
+- `internal/container`: simple DI container for `db`, `config`, and `sqlc.Querier`
+- `internal/db`:
+  - `connect.go`: creates `pgxpool.Pool`
+  - `migration/`: SQL migrations (used by `golang-migrate`)
+  - `query/`: `.sql` files for `sqlc`
+  - `sqlc/`: generated Go code (models, interfaces, queries)
+- `internal/handlers/u`: user handlers (signup, login, me, update, etc.)
+- `internal/handlers/blog`: blog handlers (create, update, delete, get)
+- `internal/middleware`: JWT cookie middleware
+- `internal/routes`: route registration (user, blog, health)
+- `internal/services/model`: request models and validation
+- `internal/services/response`: common success response helper
+- `docker/`: Dockerfile and docker-compose for Postgres
+- `Makefile`: common commands (run server, docker up, migrate, test)
 
-The project serves as a learning exercise for:
-- Building REST APIs with Golang
-- Implementing authentication and authorization
-- Working with databases using ORMs
-- Structuring a maintainable Go web application
-- Following Go best practices and conventions
-
-##### 🚀 Tech Stack
-
-- **Language:** Go 1.24.2
-- **Framework:** Gorilla Mux (HTTP Router)
-- **Database:** PostgreSQL with GORM (ORM)
-- **Authentication:** JWT (JSON Web Tokens)
-- **Environment Variables:** godotenv
-- **Password Hashing:** golang.org/x/crypto
-
-
-##### Setup and Installation
-
-1. Clone the repository
+### Setup
+1) Clone and install deps
 ```bash
 git clone https://github.com/dhanushd-27/blog_go.git
-```
-
-2. Install dependencies
-```bash
+cd blog_go
 go mod download
 ```
 
-3. Set up environment variables
-  - Note: JWT_SECRET field shoudn't be empty
+2) Start Postgres with Docker
 ```bash
-cp .env.example .env
-# Configure your environment variables
+make docker-up
+# Postgres will be available on localhost:5434 (per docker/docker-compose.yaml)
 ```
 
-4. Run the application
-```bash
-go run main.go
+3) Configure environment
+Create `.env` at repo root. All keys are required by `internal/config/config.go`.
+```env
+PORT=8080
+DB_HOST=localhost
+DB_PORT=5434
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=blogo
+SSL_MODE=disable
+DB_MAX_CONN=10
+DB_MIN_CONN=1
+DB_CONN_MAX_LIFETIME=30m
+DB_CONN_MAX_IDLE_LIFETIME=5m
+DB_HEALTH_CHECK_PERIOD=30s
+CONNECT_TIMEOUT=5s
+JWT_SECRET=change-me
 ```
 
-##### Project Structure
+4) Run migrations
+```bash
+make migrate-up
+# Uses internal/db/migration and connects to postgres://postgres:postgres@localhost:5434/blogo?sslmode=disable
+```
 
-- controllers/
-  - Request handlers and Logic
+5) Start the server
+```bash
+make server-up
+# or
+go run cmd/server/main.go
+```
 
-- db/
-  - Database connection logic
+6) Run tests
+```bash
+make test
+# or
+go test -v ./...
+```
 
-- helper/
-  - Utility and helper functions i.e (Cors Handler, JWT Auth Handler, Api Server Handler)
+### Auth Model
+- Login issues a JWT signed with `JWT_SECRET` and sets cookie `token` with:
+  - HttpOnly: true, Secure: true, SameSite=None, Path=/, 24h expiry
+- Middleware reads JWT from cookie and places claims (e.g., `user_id`) on the Echo context
+- CORS allows origin `http://localhost:3000` and credentials
 
-- middleware/
-  - Auth middleware
+### API Endpoints
 
-- models/
-  - Contains user and blog model
+Health
+```http
+GET /health  -> 200 {"status":"ok"}
+```
 
-- routes
-  - User routes and Blog routes are present here
+User
+```http
+POST /signup
+Body: { "name": string, "email": string, "password": string }
+-> 200 success
 
-##### Data Models
+POST /login
+Body: { "email": string, "password": string }
+-> 200 success (sets HttpOnly cookie "token")
 
-- **User**
-  - User model contains ID, username, email and password
+GET /me  (auth required)
+Cookie: token=<jwt>
+-> 200 { id, name, email }
 
-- **Blog**
-  - Blog model has Id, Title, Content and UserId for reference
+GET /user/all  (auth required)
+-> 200
 
-#### Images of Testing the app using postman
+PUT /user/:id  (auth required; updates authenticated user name)
+Body: { "name": string }
+-> 200 success
 
-##### User Signup
-![User Signup](./assets/user-signup.png)
+DELETE /user/:id  (auth required)
+-> 200 success
+```
 
-##### User Login
-![User Login](./assets/user-login.png)
+Blog
+```http
+GET /blogs
+-> 200 list of blogs
 
-##### User Login Set Cookie
+GET /blogs/:id
+-> 200 blog by id
 
-![User Login with cookie](./assets/user-login-cookie.png)
+POST /blogs  (auth required)
+Body: { "title": string, "content": string }
+-> 200 created blog
 
-##### Creating a Blog
-![Create Blog](./assets/blog-created.png)
+PATCH /blogs/:id  (auth required)
+Body: { "title"?: string, "content"?: string } (at least one required)
+-> 200 updated blog
 
-##### Fetch all blogs
-![Fetch All Blogs](./assets/fetch-all-blogs.png)
+DELETE /blogs/:id  (auth required)
+-> 200 success
+```
 
-##### Fetch a blog with Id
-![Fetch Blog by ID](./assets/fetch-blog-using-id.png)
+### Development Notes
+- Echo server and routes are initialized in `cmd/server/main.go` with DI from `internal/container`.
+- Database pool via `pgxpool` is configured in `internal/db/connect.go` from `.env`.
+- `sqlc` generates type-safe queries into `internal/db/sqlc`. Update `.sql` files in `internal/db/query/` and re-run `sqlc` per `sqlc.yaml`.
+- Migrations live in `internal/db/migration`. Use the `Makefile` targets `migrate-up`/`migrate-down` (requires `migrate` CLI installed).
+- JWT cookie auth is enforced on protected routes via middleware in `internal/middleware/auth.go`.
+
+### Makefile Targets
+```bash
+make docker-up        # start postgres
+make docker-down      # stop postgres
+make migrate-up       # run migrations up
+make migrate-down     # rollback migrations
+make server-up        # run the API server
+make server-down      # kill the API server process
+make test             # run tests
+```
+
+### Docker
+- `docker/docker-compose.yaml` launches Postgres 17 on host port 5434.
+- `docker/Dockerfile` can be used to containerize the API (to be filled as needed).
