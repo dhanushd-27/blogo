@@ -1,0 +1,13 @@
+# Watch how sqlc works
+# Understand how to write queries and how to generate the go code for it to use it in the codebase
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema:
+      - "internal/db/migration/000001_init_schema.up.sql"
+    queries:
+      - "internal/db/query"
+    gen:
+      go:
+        sql_package: "pgx/v5"
+        out: "internal/db/sqlc"
