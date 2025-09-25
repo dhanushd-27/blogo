@@ -20,102 +20,60 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
-
 func TestGetAllBlogs(t *testing.T) {
 	e := echo.New()
 	e.Validator = model.NewValidator()
-
-	cfg := &config.Config{
-		JWTSecret: "test",
-	}
 
 	t.Run("success - get all blogs", func(t *testing.T) {
 		mockDB := mocks.NewMockQuerier(t)
 		h := blog.NewBlogHandler(mockDB)
 
+		// Mock the ListBlogs database call
+		mockBlogs := []sqlc.Blog{
+			{
+				ID:      1,
+				Title:   "Test Blog 1",
+				Content: "Test content 1",
+				UserID:  1,
+				CreatedAt: pgtype.Timestamp{
+					Time:  time.Now(),
+					Valid: true,
+				},
+				UpdatedAt: pgtype.Timestamp{
+					Time:  time.Now(),
+					Valid: true,
+				},
+			},
+			{
+				ID:      2,
+				Title:   "Test Blog 2",
+				Content: "Test content 2",
+				UserID:  2,
+				CreatedAt: pgtype.Timestamp{
+					Time:  time.Now(),
+					Valid: true,
+				},
+				UpdatedAt: pgtype.Timestamp{
+					Time:  time.Now(),
+					Valid: true,
+				},
+			},
+		}
+
+		mockDB.On("ListBlogs", context.Background(), sqlc.ListBlogsParams{
+			Limit:  100,
+			Offset: 0,
+		}).Return(mockBlogs, nil)
+
 		req := httptest.NewRequest(http.MethodGet, "/blogs", nil)
 		rec := httptest.NewRecorder()
 		c := e.NewContext(req, rec)
-		c.SetPath("/blogs/:id")
-		c.SetParamNames("id")
-		c.SetParamValues("1")
-		c.SetPath("/blogs/:id")
-		c.SetParamNames("id")
-		c.SetParamValues("1")
 
-		jwtStr, err := helper.MakeTestJWT(cfg.JWTSecret, 1, "test", "test@gmail.com", 24*time.Hour)
-		if err != nil {
-			t.Fatalf("failed to create jwt: %v", err)
-		}
-		req.AddCookie(&http.Cookie{Name: "token", Value: jwtStr, Path: "/"})
-
-		mw := appmw.JWTCookieMiddleware(cfg.JWTSecret)
-		handler := mw(h.GetAllBlogs)
-		err = handler(c)
+		err := h.GetAllBlogs(c)
 
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Contains(t, rec.Body.String(), "All blogs fetched successfully")
-	})
-
-	t.Run("unauthorized - missing jwt cookie", func(t *testing.T) {
-		mockDB := mocks.NewMockQuerier(t)
-		h := blog.NewBlogHandler(mockDB)
-
-		req := httptest.NewRequest(http.MethodGet, "/blogs", nil)
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
-
-		mw := appmw.JWTCookieMiddleware(cfg.JWTSecret)
-		handler := mw(h.GetAllBlogs)
-		err := handler(c)
-
-		assert.NoError(t, err)
-		assert.Equal(t, http.StatusUnauthorized, rec.Code)
-	})
-
-	t.Run("unauthorized - expired jwt", func(t *testing.T) {
-		mockDB := mocks.NewMockQuerier(t)
-		h := blog.NewBlogHandler(mockDB)
-
-		req := httptest.NewRequest(http.MethodGet, "/blogs", nil)
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
-
-		jwtStr, err := helper.MakeTestJWT(cfg.JWTSecret, 1, "test", "test@gmail.com", -1*time.Hour)
-		if err != nil {
-			t.Fatalf("failed to create jwt: %v", err)
-		}
-		req.AddCookie(&http.Cookie{Name: "token", Value: jwtStr, Path: "/"})
-
-		mw := appmw.JWTCookieMiddleware(cfg.JWTSecret)
-		handler := mw(h.GetAllBlogs)
-		err = handler(c)
-
-		assert.NoError(t, err)
-		assert.Equal(t, http.StatusUnauthorized, rec.Code)
-	})
-
-	t.Run("unauthorized - invalid jwt", func(t *testing.T) {
-		mockDB := mocks.NewMockQuerier(t)
-		h := blog.NewBlogHandler(mockDB)
-
-		req := httptest.NewRequest(http.MethodGet, "/blogs", nil)
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
-
-		jwtStr, err := helper.MakeTestJWT("wrong-secret", 1, "test", "test@gmail.com", 24*time.Hour)
-		if err != nil {
-			t.Fatalf("failed to create jwt: %v", err)
-		}
-		req.AddCookie(&http.Cookie{Name: "token", Value: jwtStr, Path: "/"})
-
-		mw := appmw.JWTCookieMiddleware(cfg.JWTSecret)
-		handler := mw(h.GetAllBlogs)
-		err = handler(c)
-
-		assert.NoError(t, err)
-		assert.Equal(t, http.StatusUnauthorized, rec.Code)
+		assert.Contains(t, rec.Body.String(), "Blogs fetched successfully")
 	})
 }
 

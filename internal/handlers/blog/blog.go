@@ -115,5 +115,13 @@ func (h *blogHandler) GetBlogByID(c echo.Context) error {
 }
 
 func (h *blogHandler) GetAllBlogs(c echo.Context) error {
-	return response.Success(c, "All blogs fetched successfully", nil)
+	blogs, err := h.queries.ListBlogs(context.Background(), sqlc.ListBlogsParams{
+		Limit:  100,
+		Offset: 0,
+	})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to fetch blogs"})
+	}
+
+	return response.Success(c, "Blogs fetched successfully", blogs)
 }
