@@ -9,7 +9,7 @@ import (
 	"blogo/internal/services/helper"
 	"blogo/internal/services/model"
 	"context"
-	"fmt"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -20,6 +20,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
+
 func TestGetAllBlogs(t *testing.T) {
 	e := echo.New()
 	e.Validator = model.NewValidator()
@@ -81,28 +82,63 @@ func TestGetBlogByID(t *testing.T) {
 	e := echo.New()
 	e.Validator = model.NewValidator()
 
-	cfg := &config.Config{JWTSecret: "test"}
-
-	fmt.Println(cfg)
-
 	t.Run("success - get blog by id", func(t *testing.T) {
-		assert.Equal(t, "test pending", "test pending")
-	})
+		ctx := context.Background()
+		mockDB := mocks.NewMockQuerier(t)
+		h := blog.NewBlogHandler(mockDB)
 
-	t.Run("unauthorized - missing jwt cookie", func(t *testing.T) {
-		assert.Equal(t, "test pending", "test pending")
-	})
+		// Mock the GetBlogByID database call
+		mockBlog := sqlc.Blog{
+			ID:      1,
+			Title:   "Test Blog",
+			Content: "Test content",
+			UserID:  1,
+			CreatedAt: pgtype.Timestamp{
+				Time:  time.Now(),
+				Valid: true,
+			},
+			UpdatedAt: pgtype.Timestamp{
+				Time:  time.Now(),
+				Valid: true,
+			},
+		}
 
-	t.Run("unauthorized - expired jwt", func(t *testing.T) {
-		assert.Equal(t, "test pending", "test pending")
-	})
+		mockDB.On("GetBlogByID", ctx, int32(1)).Return(mockBlog, nil)
 
-	t.Run("unauthorized - invalid jwt", func(t *testing.T) {
-		assert.Equal(t, "test pending", "test pending")
+		req := httptest.NewRequest(http.MethodGet, "/blogs/1", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		c.SetPath("/blogs/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("1")
+
+		err := h.GetBlogByID(c)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Contains(t, rec.Body.String(), "Blog fetched successfully")
 	})
 
 	t.Run("not found - blog not found", func(t *testing.T) {
-		assert.Equal(t, "test pending", "test pending")
+		ctx := context.Background()
+		mockDB := mocks.NewMockQuerier(t)
+		h := blog.NewBlogHandler(mockDB)
+
+		// Mock the GetBlogByID database call to return an error
+		mockDB.On("GetBlogByID", ctx, int32(999)).Return(sqlc.Blog{}, errors.New("blog not found"))
+
+		req := httptest.NewRequest(http.MethodGet, "/blogs/999", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		c.SetPath("/blogs/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("999")
+
+		err := h.GetBlogByID(c)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Contains(t, rec.Body.String(), "Blog not found")
 	})
 }
 
