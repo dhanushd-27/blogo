@@ -151,10 +151,10 @@ func TestCreateBlog(t *testing.T) {
 	}
 
 	expectedBlog := sqlc.Blog{
-		ID:      1,
-		Title:   "Test Blog",
-		Content: "Test content",
-		UserID:  1,
+		ID:        1,
+		Title:     "Test Blog",
+		Content:   "Test content",
+		UserID:    1,
 		CreatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
 		UpdatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
 	}
@@ -497,5 +497,149 @@ func TestUpdateBlog(t *testing.T) {
 }
 
 func TestDeleteBlog(t *testing.T) {
-	assert.Equal(t, "test pending", "test pending")
+	e := echo.New()
+	e.Validator = model.NewValidator()
+
+	cfg := &config.Config{
+		JWTSecret: "test",
+	}
+
+	t.Run("success - delete blog", func(t *testing.T) {
+		ctx := context.Background()
+		mockDB := mocks.NewMockQuerier(t)
+		h := blog.NewBlogHandler(mockDB)
+
+		req := httptest.NewRequest(http.MethodDelete, "/blogs/1", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		c.SetPath("/blogs/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("1")
+
+		jwtStr, err := helper.MakeTestJWT(cfg.JWTSecret, 1, "test", "test@gmail.com", 24*time.Hour)
+		if err != nil {
+			t.Fatalf("failed to create jwt: %v", err)
+		}
+		req.AddCookie(&http.Cookie{Name: "token", Value: jwtStr, Path: "/"})
+
+		mockDB.On("GetBlogByID", ctx, int32(1)).Return(sqlc.Blog{
+			ID:        1,
+			Title:     "Test Blog",
+			Content:   "Test Content",
+			UserID:    1,
+			CreatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
+			UpdatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
+		}, nil)
+
+		mockDB.On("DeleteBlog", ctx, int32(1)).Return(int64(1), nil)
+
+		mw := appmw.JWTCookieMiddleware(cfg.JWTSecret)
+		handler := mw(h.DeleteBlog)
+		err = handler(c)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Contains(t, rec.Body.String(), "Blog deleted successfully")
+	})
+
+	t.Run("not found - blog not found", func(t *testing.T) {
+		ctx := context.Background()
+		mockDB := mocks.NewMockQuerier(t)
+		h := blog.NewBlogHandler(mockDB)
+
+		req := httptest.NewRequest(http.MethodDelete, "/blogs/1", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		c.SetPath("/blogs/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("1")
+
+		jwtStr, err := helper.MakeTestJWT(cfg.JWTSecret, 1, "test", "test@gmail.com", 24*time.Hour)
+		if err != nil {
+			t.Fatalf("failed to create jwt: %v", err)
+		}
+		req.AddCookie(&http.Cookie{Name: "token", Value: jwtStr, Path: "/"})
+
+		mockDB.On("GetBlogByID", ctx, int32(1)).Return(sqlc.Blog{}, errors.New("blog not found"))
+
+		mw := appmw.JWTCookieMiddleware(cfg.JWTSecret)
+		handler := mw(h.DeleteBlog)
+		err = handler(c)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Contains(t, rec.Body.String(), "Blog not found")
+	})
+
+	t.Run("bad request - invalid blog id", func(t *testing.T) {
+		mockDB := mocks.NewMockQuerier(t)
+		h := blog.NewBlogHandler(mockDB)
+
+		req := httptest.NewRequest(http.MethodDelete, "/blogs/invalid", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		c.SetPath("/blogs/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("invalid")
+
+		jwtStr, err := helper.MakeTestJWT(cfg.JWTSecret, 1, "test", "test@gmail.com", 24*time.Hour)
+		if err != nil {
+			t.Fatalf("failed to create jwt: %v", err)
+		}
+		req.AddCookie(&http.Cookie{Name: "token", Value: jwtStr, Path: "/"})
+
+		mw := appmw.JWTCookieMiddleware(cfg.JWTSecret)
+		handler := mw(h.DeleteBlog)
+		err = handler(c)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		assert.Contains(t, rec.Body.String(), "Invalid blog id")
+	})
+
+	t.Run("unauthorized - missing jwt cookie", func(t *testing.T) {
+		mockDB := mocks.NewMockQuerier(t)
+		h := blog.NewBlogHandler(mockDB)
+
+		req := httptest.NewRequest(http.MethodDelete, "/blogs/1", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		c.SetPath("/blogs/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("1")
+
+		mw := appmw.JWTCookieMiddleware(cfg.JWTSecret)
+		handler := mw(h.DeleteBlog)
+		err := handler(c)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusUnauthorized, rec.Code)
+		assert.Contains(t, rec.Body.String(), "Missing or invalid token")
+	})
+
+	t.Run("unauthorized - expired jwt", func(t *testing.T) {
+		mockDB := mocks.NewMockQuerier(t)
+		h := blog.NewBlogHandler(mockDB)
+
+		req := httptest.NewRequest(http.MethodDelete, "/blogs/1", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		c.SetPath("/blogs/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("1")
+
+		jwtStr, err := helper.MakeTestJWT(cfg.JWTSecret, 1, "test", "test@gmail.com", -1*time.Hour)
+		if err != nil {
+			t.Fatalf("failed to create jwt: %v", err)
+		}
+		req.AddCookie(&http.Cookie{Name: "token", Value: jwtStr, Path: "/"})
+
+		mw := appmw.JWTCookieMiddleware(cfg.JWTSecret)
+		handler := mw(h.DeleteBlog)
+		err = handler(c)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusUnauthorized, rec.Code)
+		assert.Contains(t, rec.Body.String(), "Invalid or expired token")
+	})
 }

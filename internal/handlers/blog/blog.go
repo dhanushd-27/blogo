@@ -107,6 +107,26 @@ func (h *blogHandler) UpdateBlog(c echo.Context) error {
 }
 
 func (h *blogHandler) DeleteBlog(c echo.Context) error {
+	idParam := c.Param("id")
+
+	// Convert id to int32
+	var blogID int32
+	if _, err := fmt.Sscanf(idParam, "%d", &blogID); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid blog id"})
+	}
+
+	// Check if blog exists
+	_, err := h.queries.GetBlogByID(context.Background(), blogID)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "Blog not found"})
+	}
+
+	// Delete the blog
+	_, err = h.queries.DeleteBlog(context.Background(), blogID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to delete blog"})
+	}
+
 	return response.Success(c, "Blog deleted successfully", nil)
 }
 
